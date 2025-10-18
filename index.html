@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Guardrail - Output Governance & Validation</title>
+    <title>AI Content Validator - Check AI-Generated Content</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -25,108 +25,56 @@
         body {
             background-color: #f1f5f9;
             color: #334155;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
         
         header {
             background: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+            text-align: center;
             margin-bottom: 2rem;
-        }
-        
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             font-weight: 700;
             color: var(--primary);
+            margin-bottom: 0.5rem;
         }
         
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-        
-        .nav-links a {
-            text-decoration: none;
+        .tagline {
             color: var(--gray);
+            font-size: 1.2rem;
             font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
-        }
-        
-        .sidebar {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            height: fit-content;
-        }
-        
-        .sidebar h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        
-        .sidebar ul {
-            list-style: none;
-        }
-        
-        .sidebar li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .sidebar li:hover {
-            color: var(--primary);
-        }
-        
-        .sidebar li.active {
-            color: var(--primary);
-            font-weight: 600;
         }
         
         .main-content {
             background: white;
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 2rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
         h1 {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             color: var(--secondary);
+            text-align: center;
+        }
+        
+        .description {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-size: 1.1rem;
         }
         
         .input-section {
@@ -135,47 +83,62 @@
         
         textarea {
             width: 100%;
-            height: 200px;
-            padding: 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            height: 250px;
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             resize: vertical;
             font-size: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+            line-height: 1.5;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
         }
         
         .btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 1rem 3rem;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             transition: background 0.3s;
+            font-size: 1.1rem;
+            display: block;
+            margin: 0 auto;
         }
         
         .btn:hover {
             background: var(--secondary);
         }
         
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
         .results {
             margin-top: 2rem;
+            display: none;
         }
         
         .score-card {
             background: var(--light);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
         }
         
         .score {
-            font-size: 2rem;
+            font-size: 3rem;
             font-weight: 700;
+            margin: 1rem 0;
         }
         
         .score-high {
@@ -192,19 +155,22 @@
         
         .validation-results {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
+            margin-bottom: 2rem;
         }
         
         .validation-card {
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 1.5rem;
+            text-align: center;
         }
         
         .validation-card h3 {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
@@ -226,11 +192,11 @@
         }
         
         .issue {
-            padding: 0.75rem;
+            padding: 1rem;
             background: #fef2f2;
             border-left: 4px solid var(--danger);
             margin-bottom: 0.5rem;
-            border-radius: 4px;
+            border-radius: 5px;
         }
         
         .suggestions {
@@ -238,330 +204,247 @@
         }
         
         .suggestion {
-            padding: 0.75rem;
+            padding: 1rem;
             background: #f0fdf4;
             border-left: 4px solid var(--success);
             margin-bottom: 0.5rem;
-            border-radius: 4px;
+            border-radius: 5px;
         }
         
-        .history-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
+        .loading {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin: 1rem 0;
         }
         
-        .history-item:hover {
-            background: var(--light);
+        .loading-dots:after {
+            content: '...';
+            animation: loading 1.5s infinite;
         }
         
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
+        @keyframes loading {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
         
-        .history-score {
-            font-weight: 600;
-        }
-        
-        .history-preview {
+        footer {
+            text-align: center;
+            margin-top: 3rem;
             color: var(--gray);
             font-size: 0.9rem;
         }
         
-        .brand-guidelines {
-            margin-top: 2rem;
-        }
-        
-        .guideline-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .compliance-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .badge-compliant {
-            background: #dcfce7;
-            color: var(--success);
-        }
-        
-        .badge-noncompliant {
-            background: #fecaca;
-            color: var(--danger);
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .validation-results {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container nav-container">
-            <div class="logo">AI Guardrail</div>
-            <div class="nav-links">
-                <a href="#">Dashboard</a>
-                <a href="#">Reports</a>
-                <a href="#">Brand Guidelines</a>
-                <a href="#">Settings</a>
-            </div>
-        </div>
-    </header>
-
     <div class="container">
-        <div class="dashboard">
-            <div class="sidebar">
-                <h3>Validation Tools</h3>
-                <ul>
-                    <li class="active" data-tab="content-validator">Content Validator</li>
-                    <li data-tab="fact-checker">Fact Checker</li>
-                    <li data-tab="brand-compliance">Brand Compliance</li>
-                    <li data-tab="plagiarism-check">Plagiarism Detection</li>
-                    <li data-tab="history">Validation History</li>
-                </ul>
-                
-                <h3 style="margin-top: 2rem;">Brand Guidelines</h3>
-                <ul>
-                    <li>Tone & Voice</li>
-                    <li>Terminology</li>
-                    <li>Style Rules</li>
-                    <li>Compliance Rules</li>
-                </ul>
+        <header>
+            <div class="logo">AI Content Validator</div>
+            <div class="tagline">Check AI-generated content for accuracy and quality</div>
+        </header>
+        
+        <div class="main-content">
+            <h1>Validate AI-Generated Content</h1>
+            <p class="description">
+                Paste any AI-generated text below to check for factual accuracy, plagiarism, and potential issues. 
+                Get instant analysis and improvement suggestions.
+            </p>
+            
+            <div class="input-section">
+                <textarea id="content-input" placeholder="Paste your AI-generated content here... (e.g., ChatGPT, Gemini, Claude responses)"></textarea>
+                <button id="validate-btn" class="btn">Validate Content</button>
+                <div class="loading" id="loading">
+                    Analyzing content<span class="loading-dots"></span>
+                </div>
             </div>
             
-            <div class="main-content">
-                <!-- Content Validator Tab -->
-                <div id="content-validator" class="tab-content active">
-                    <h1>AI Content Validator</h1>
-                    <p>Paste your AI-generated content below to validate for accuracy, brand compliance, and potential issues.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="content-input" placeholder="Paste your AI-generated content here..."></textarea>
-                        <button id="validate-btn" class="btn">Validate Content</button>
+            <div id="validation-results" class="results">
+                <div class="score-card">
+                    <h2>Overall Content Score</h2>
+                    <p>Based on comprehensive analysis of your content</p>
+                    <div id="trust-score" class="score score-high">87%</div>
+                </div>
+                
+                <h2>Detailed Analysis</h2>
+                <div class="validation-results">
+                    <div class="validation-card">
+                        <h3><span class="status-pass">✓</span> Factual Accuracy</h3>
+                        <p>Verified against reliable sources</p>
+                        <div class="score score-high">92%</div>
                     </div>
                     
-                    <div id="validation-results" class="results" style="display: none;">
-                        <div class="score-card">
-                            <div>
-                                <h2>Overall Trust Score</h2>
-                                <p>Based on comprehensive analysis of your content</p>
-                            </div>
-                            <div id="trust-score" class="score score-high">87%</div>
-                        </div>
-                        
-                        <h2>Validation Results</h2>
-                        <div class="validation-results">
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Factual Accuracy</h3>
-                                <p>Checked against verified sources and databases</p>
-                                <div class="score score-high">92%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-warning">⚠</span> Brand Compliance</h3>
-                                <p>Alignment with company tone and terminology</p>
-                                <div class="score score-medium">78%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Plagiarism Check</h3>
-                                <p>Similarity with existing published content</p>
-                                <div class="score score-high">96%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Hallucination Detection</h3>
-                                <p>Identification of potentially fabricated information</p>
-                                <div class="score score-high">89%</div>
-                            </div>
-                        </div>
-                        
-                        <div class="issues-list">
-                            <h3>Identified Issues</h3>
-                            <div class="issue">
-                                <strong>Brand Voice Inconsistency:</strong> Content uses casual tone where formal is required per guidelines.
-                            </div>
-                            <div class="issue">
-                                <strong>Unverified Claim:</strong> Statement about "industry-leading performance" lacks supporting data.
-                            </div>
-                        </div>
-                        
-                        <div class="suggestions">
-                            <h3>Suggestions for Improvement</h3>
-                            <div class="suggestion">
-                                Replace "amazing" with "reliable" to align with brand voice guidelines.
-                            </div>
-                            <div class="suggestion">
-                                Add specific metrics to support performance claims.
-                            </div>
-                            <div class="suggestion">
-                                Include disclaimer for forward-looking statements.
-                            </div>
-                        </div>
+                    <div class="validation-card">
+                        <h3><span class="status-warning">⚠</span> Originality</h3>
+                        <p>Plagiarism and similarity check</p>
+                        <div class="score score-medium">78%</div>
+                    </div>
+                    
+                    <div class="validation-card">
+                        <h3><span class="status-pass">✓</span> Readability</h3>
+                        <p>Grammar and clarity assessment</p>
+                        <div class="score score-high">85%</div>
+                    </div>
+                    
+                    <div class="validation-card">
+                        <h3><span class="status-pass">✓</span> Trustworthiness</h3>
+                        <p>Hallucination detection</p>
+                        <div class="score score-high">89%</div>
                     </div>
                 </div>
                 
-                <!-- Fact Checker Tab -->
-                <div id="fact-checker" class="tab-content">
-                    <h1>Fact Checker</h1>
-                    <p>Verify specific claims and statements against trusted sources.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="fact-input" placeholder="Enter specific claims to verify..."></textarea>
-                        <button class="btn">Check Facts</button>
+                <div class="issues-list">
+                    <h3>Areas for Improvement</h3>
+                    <div class="issue">
+                        <strong>Fact Check Needed:</strong> Some claims lack supporting evidence or sources.
                     </div>
-                    
-                    <div class="results">
-                        <h2>Fact-Checking Results</h2>
-                        <div class="validation-card">
-                            <h3>Claim: "Our product reduces energy costs by 40%"</h3>
-                            <p><span class="status-pass">✓</span> <strong>Verified:</strong> Supported by independent study (Energy Efficiency Journal, 2023)</p>
-                        </div>
-                        
-                        <div class="validation-card">
-                            <h3>Claim: "Used by 90% of Fortune 500 companies"</h3>
-                            <p><span class="status-fail">✗</span> <strong>Unverified:</strong> Could not find independent verification. Current data suggests 65%.</p>
-                        </div>
+                    <div class="issue">
+                        <strong>Originality:</strong> Moderate similarity with existing online content.
                     </div>
                 </div>
                 
-                <!-- Brand Compliance Tab -->
-                <div id="brand-compliance" class="tab-content">
-                    <h1>Brand Compliance Check</h1>
-                    <p>Ensure content aligns with your brand guidelines and terminology.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="brand-input" placeholder="Paste content to check against brand guidelines..."></textarea>
-                        <button class="btn">Check Compliance</button>
+                <div class="suggestions">
+                    <h3>Suggestions</h3>
+                    <div class="suggestion">
+                        Add specific sources or citations to support factual claims.
                     </div>
-                    
-                    <div class="brand-guidelines">
-                        <h2>Brand Guidelines Status</h2>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Tone: Professional yet Approachable</h3>
-                                <p>Avoid overly casual language and slang</p>
-                            </div>
-                            <span class="compliance-badge badge-noncompliant">2 Violations</span>
-                        </div>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Terminology: Use "Client" not "Customer"</h3>
-                                <p>Maintain consistent terminology across all content</p>
-                            </div>
-                            <span class="compliance-badge badge-compliant">Compliant</span>
-                        </div>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Claims: Support with Data</h3>
-                                <p>All performance claims must be verifiable</p>
-                            </div>
-                            <span class="compliance-badge badge-noncompliant">1 Violation</span>
-                        </div>
+                    <div class="suggestion">
+                        Rephrase sections to improve originality and avoid similarity issues.
                     </div>
-                </div>
-                
-                <!-- History Tab -->
-                <div id="history" class="tab-content">
-                    <h1>Validation History</h1>
-                    <p>Review previously validated content and results.</p>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Q4 Product Launch Announcement</h3>
-                            <div class="history-score score-high">91%</div>
-                        </div>
-                        <div class="history-preview">Our latest innovation represents a significant leap forward in...</div>
-                        <div>Validated: Oct 15, 2023 | Content Type: Marketing</div>
-                    </div>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Technical Documentation Update</h3>
-                            <div class="history-score score-medium">76%</div>
-                        </div>
-                        <div class="history-preview">The API endpoints have been updated to include new authentication...</div>
-                        <div>Validated: Oct 12, 2023 | Content Type: Technical</div>
-                    </div>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Investor Relations Report</h3>
-                            <div class="history-score score-high">88%</div>
-                        </div>
-                        <div class="history-preview">Q3 financial results demonstrate strong growth in key markets...</div>
-                        <div>Validated: Oct 5, 2023 | Content Type: Financial</div>
+                    <div class="suggestion">
+                        Consider adding recent data or examples to strengthen arguments.
                     </div>
                 </div>
             </div>
         </div>
+        
+        <footer>
+            <p>AI Content Validator • Ensure quality and accuracy in AI-generated content</p>
+        </footer>
     </div>
 
     <script>
-        // Tab functionality
-        document.querySelectorAll('.sidebar li').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all tabs
-                document.querySelectorAll('.sidebar li').forEach(li => {
-                    li.classList.remove('active');
-                });
-                
-                // Hide all tab content
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Show corresponding tab content
-                const tabId = this.getAttribute('data-tab');
-                document.getElementById(tabId).classList.add('active');
-            });
-        });
-        
+        // DOM Elements
+        const contentInput = document.getElementById('content-input');
+        const validateBtn = document.getElementById('validate-btn');
+        const validationResults = document.getElementById('validation-results');
+        const trustScore = document.getElementById('trust-score');
+        const loading = document.getElementById('loading');
+
         // Validation functionality
-        document.getElementById('validate-btn').addEventListener('click', function() {
-            const content = document.getElementById('content-input').value;
+        validateBtn.addEventListener('click', function() {
+            const content = contentInput.value.trim();
             
-            if (content.trim() === '') {
-                alert('Please enter some content to validate.');
+            if (content === '') {
+                alert('Please paste some AI-generated content to validate.');
                 return;
             }
             
-            // In a real application, this would make API calls to various validation services
-            // For this demo, we'll just show the results
+            // Show loading
+            loading.style.display = 'block';
+            validateBtn.disabled = true;
+            validateBtn.textContent = 'Validating...';
             
-            // Simulate API call delay
-            this.textContent = 'Validating...';
-            this.disabled = true;
-            
+            // Simulate analysis (in real app, this would be API calls)
             setTimeout(() => {
-                document.getElementById('validation-results').style.display = 'block';
-                this.textContent = 'Validate Content';
-                this.disabled = false;
+                // Hide loading
+                loading.style.display = 'none';
+                validateBtn.disabled = false;
+                validateBtn.textContent = 'Validate Content';
+                
+                // Show results
+                validationResults.style.display = 'block';
+                
+                // Generate random scores for demo (in real app, these would come from analysis)
+                updateScores(content);
                 
                 // Scroll to results
-                document.getElementById('validation-results').scrollIntoView({ 
+                validationResults.scrollIntoView({ 
                     behavior: 'smooth' 
                 });
-            }, 1500);
+            }, 2000);
         });
-        
-        // Simulate real-time validation as user types
-        document.getElementById('content-input').addEventListener('input', function() {
-            // In a real app, this could trigger lightweight validation
-            // or provide real-time feedback
+
+        function updateScores(content) {
+            // Generate realistic scores based on content length and complexity
+            const length = content.length;
+            const wordCount = content.split(/\s+/).length;
+            
+            // Base scores with some randomness
+            const factualScore = Math.min(95, 70 + Math.random() * 25);
+            const originalityScore = Math.min(95, 65 + Math.random() * 30);
+            const readabilityScore = Math.min(95, 75 + Math.random() * 20);
+            const trustScoreValue = Math.min(95, 72 + Math.random() * 23);
+            
+            // Update scores with animation
+            animateScore(trustScore, trustScoreValue);
+            
+            // Update individual scores
+            document.querySelectorAll('.validation-card .score').forEach((card, index) => {
+                const scores = [factualScore, originalityScore, readabilityScore, trustScoreValue];
+                setTimeout(() => {
+                    animateScore(card, scores[index]);
+                }, index * 300);
+            });
+        }
+
+        function animateScore(element, targetScore) {
+            const finalScore = Math.round(targetScore);
+            element.textContent = '0%';
+            
+            let currentScore = 0;
+            const increment = finalScore / 20; // Animate over 20 steps
+            
+            const timer = setInterval(() => {
+                currentScore += increment;
+                if (currentScore >= finalScore) {
+                    currentScore = finalScore;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.round(currentScore) + '%';
+                
+                // Update color based on score
+                if (currentScore >= 80) {
+                    element.className = 'score score-high';
+                } else if (currentScore >= 60) {
+                    element.className = 'score score-medium';
+                } else {
+                    element.className = 'score score-low';
+                }
+            }, 50);
+        }
+
+        // Auto-resize textarea
+        contentInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Allow Enter key to submit (but Shift+Enter for new line)
+        contentInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                validateBtn.click();
+            }
         });
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Guardrail - Output Governance & Validation</title>
+    <title>AI Fact Checker - Multi-Model AI Assistant</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -13,6 +13,7 @@
             --success: #059669;
             --gray: #6b7280;
             --light: #f8fafc;
+            --dark: #1f2937;
         }
         
         * {
@@ -23,7 +24,8 @@
         }
         
         body {
-            background-color: #f1f5f9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: #334155;
         }
         
@@ -31,25 +33,34 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         header {
-            background: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
-        }
-        
-        .nav-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
         }
         
         .nav-links {
@@ -62,506 +73,631 @@
             color: var(--gray);
             font-weight: 500;
             transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
         }
         
         .nav-links a:hover {
             color: var(--primary);
+            background: var(--light);
         }
         
-        .dashboard {
+        .main-app {
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 2rem;
+            flex: 1;
         }
         
         .sidebar {
-            background: white;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             height: fit-content;
         }
         
-        .sidebar h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        
-        .sidebar ul {
-            list-style: none;
-        }
-        
-        .sidebar li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .sidebar li:hover {
-            color: var(--primary);
-        }
-        
-        .sidebar li.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .main-content {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        h1 {
-            margin-bottom: 1.5rem;
-            color: var(--secondary);
-        }
-        
-        .input-section {
+        .model-selector {
             margin-bottom: 2rem;
         }
         
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            resize: vertical;
-            font-size: 1rem;
+        .model-selector h3 {
             margin-bottom: 1rem;
+            color: var(--primary);
         }
         
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+        .model-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .model-option {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
         
-        .btn:hover {
-            background: var(--secondary);
+        .model-option:hover {
+            border-color: var(--primary);
+            background: var(--light);
         }
         
-        .results {
+        .model-option.active {
+            border-color: var(--primary);
+            background: #dbeafe;
+        }
+        
+        .model-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .chatgpt-icon { background: #10a37f; }
+        .gemini-icon { background: #4285f4; }
+        .deepseek-icon { background: #7c3aed; }
+        .claude-icon { background: #f4a261; }
+        
+        .fact-check-features {
             margin-top: 2rem;
         }
         
-        .score-card {
-            background: var(--light);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .fact-check-features h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
         
-        .score {
-            font-size: 2rem;
-            font-weight: 700;
+        .feature-list {
+            list-style: none;
         }
         
-        .score-high {
-            color: var(--success);
-        }
-        
-        .score-medium {
-            color: var(--warning);
-        }
-        
-        .score-low {
-            color: var(--danger);
-        }
-        
-        .validation-results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-        
-        .validation-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-        
-        .validation-card h3 {
+        .feature-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1rem;
         }
         
-        .status-pass {
+        .feature-list li:before {
+            content: "✓";
             color: var(--success);
+            font-weight: bold;
         }
         
-        .status-fail {
-            color: var(--danger);
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
         }
         
-        .status-warning {
-            color: var(--warning);
-        }
-        
-        .issues-list {
-            margin-top: 1.5rem;
-        }
-        
-        .issue {
-            padding: 0.75rem;
-            background: #fef2f2;
-            border-left: 4px solid var(--danger);
-            margin-bottom: 0.5rem;
-            border-radius: 4px;
-        }
-        
-        .suggestions {
-            margin-top: 1.5rem;
-        }
-        
-        .suggestion {
-            padding: 0.75rem;
-            background: #f0fdf4;
-            border-left: 4px solid var(--success);
-            margin-bottom: 0.5rem;
-            border-radius: 4px;
-        }
-        
-        .history-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-        }
-        
-        .history-item:hover {
-            background: var(--light);
-        }
-        
-        .history-header {
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
+            align-items: center;
         }
         
-        .history-score {
-            font-weight: 600;
+        .chat-header h2 {
+            color: var(--primary);
         }
         
-        .history-preview {
+        .current-model {
+            background: var(--light);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
             color: var(--gray);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: var(--light);
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .fact-check-badge {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .correction {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.5rem;
             font-size: 0.9rem;
         }
         
-        .brand-guidelines {
-            margin-top: 2rem;
+        .correction:before {
+            content: "⚠️ Correction: ";
+            font-weight: bold;
+            color: var(--warning);
         }
         
-        .guideline-item {
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .chat-input-form {
             display: flex;
-            justify-content: space-between;
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
+            gap: 1rem;
         }
         
-        .compliance-badge {
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 1rem;
+            resize: none;
+            height: 60px;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            align-self: flex-end;
+        }
+        
+        .send-button:hover {
+            background: var(--secondary);
+        }
+        
+        .send-button:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 1rem 1.5rem;
+            background: var(--light);
+            border-radius: 18px;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .typing-dots {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
         }
         
-        .badge-compliant {
-            background: #dcfce7;
-            color: var(--success);
+        .typing-dots:after {
+            content: '...';
+            animation: typing 1.5s infinite;
         }
         
-        .badge-noncompliant {
-            background: #fecaca;
-            color: var(--danger);
+        @keyframes typing {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        .fact-check-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .fact-check-panel h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .verification-result {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .verification-result.false {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        
+        .confidence-meter {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        
+        .confidence-level {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+        }
+        
+        .confidence-level.medium {
+            background: var(--warning);
+            width: 60%;
+        }
+        
+        .confidence-level.low {
+            background: var(--danger);
+            width: 30%;
+        }
+        
+        @media (max-width: 768px) {
+            .main-app {
+                grid-template-columns: 1fr;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container nav-container">
-            <div class="logo">AI Guardrail</div>
-            <div class="nav-links">
-                <a href="#">Dashboard</a>
-                <a href="#">Reports</a>
-                <a href="#">Brand Guidelines</a>
-                <a href="#">Settings</a>
-            </div>
-        </div>
-    </header>
-
     <div class="container">
-        <div class="dashboard">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🤖</span>
+                AI Fact Checker Pro
+            </div>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Features</a>
+                <a href="#">API</a>
+                <a href="#">Enterprise</a>
+            </div>
+        </header>
+        
+        <div class="main-app">
             <div class="sidebar">
-                <h3>Validation Tools</h3>
-                <ul>
-                    <li class="active" data-tab="content-validator">Content Validator</li>
-                    <li data-tab="fact-checker">Fact Checker</li>
-                    <li data-tab="brand-compliance">Brand Compliance</li>
-                    <li data-tab="plagiarism-check">Plagiarism Detection</li>
-                    <li data-tab="history">Validation History</li>
-                </ul>
+                <div class="model-selector">
+                    <h3>Select AI Model</h3>
+                    <div class="model-options">
+                        <div class="model-option active" data-model="chatgpt">
+                            <div class="model-icon chatgpt-icon">C</div>
+                            <div>
+                                <div>ChatGPT</div>
+                                <small>OpenAI • Best for creative tasks</small>
+                            </div>
+                        </div>
+                        <div class="model-option" data-model="gemini">
+                            <div class="model-icon gemini-icon">G</div>
+                            <div>
+                                <div>Gemini Pro</div>
+                                <small>Google • Strong reasoning</small>
+                            </div>
+                        </div>
+                        <div class="model-option" data-model="deepseek">
+                            <div class="model-icon deepseek-icon">D</div>
+                            <div>
+                                <div>DeepSeek</div>
+                                <small>Open source • Cost-effective</small>
+                            </div>
+                        </div>
+                        <div class="model-option" data-model="claude">
+                            <div class="model-icon claude-icon">A</div>
+                            <div>
+                                <div>Claude 2</div>
+                                <small>Anthropic • Safety-focused</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
-                <h3 style="margin-top: 2rem;">Brand Guidelines</h3>
-                <ul>
-                    <li>Tone & Voice</li>
-                    <li>Terminology</li>
-                    <li>Style Rules</li>
-                    <li>Compliance Rules</li>
-                </ul>
+                <div class="fact-check-features">
+                    <h3>Fact-Checking Features</h3>
+                    <ul class="feature-list">
+                        <li>Real-time factual verification</li>
+                        <li>Source credibility analysis</li>
+                        <li>Contradiction detection</li>
+                        <li>Confidence scoring</li>
+                        <li>Citation generation</li>
+                        <li>Bias detection</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="main-content">
-                <!-- Content Validator Tab -->
-                <div id="content-validator" class="tab-content active">
-                    <h1>AI Content Validator</h1>
-                    <p>Paste your AI-generated content below to validate for accuracy, brand compliance, and potential issues.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="content-input" placeholder="Paste your AI-generated content here..."></textarea>
-                        <button id="validate-btn" class="btn">Validate Content</button>
-                    </div>
-                    
-                    <div id="validation-results" class="results" style="display: none;">
-                        <div class="score-card">
-                            <div>
-                                <h2>Overall Trust Score</h2>
-                                <p>Based on comprehensive analysis of your content</p>
-                            </div>
-                            <div id="trust-score" class="score score-high">87%</div>
-                        </div>
-                        
-                        <h2>Validation Results</h2>
-                        <div class="validation-results">
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Factual Accuracy</h3>
-                                <p>Checked against verified sources and databases</p>
-                                <div class="score score-high">92%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-warning">⚠</span> Brand Compliance</h3>
-                                <p>Alignment with company tone and terminology</p>
-                                <div class="score score-medium">78%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Plagiarism Check</h3>
-                                <p>Similarity with existing published content</p>
-                                <div class="score score-high">96%</div>
-                            </div>
-                            
-                            <div class="validation-card">
-                                <h3><span class="status-pass">✓</span> Hallucination Detection</h3>
-                                <p>Identification of potentially fabricated information</p>
-                                <div class="score score-high">89%</div>
-                            </div>
-                        </div>
-                        
-                        <div class="issues-list">
-                            <h3>Identified Issues</h3>
-                            <div class="issue">
-                                <strong>Brand Voice Inconsistency:</strong> Content uses casual tone where formal is required per guidelines.
-                            </div>
-                            <div class="issue">
-                                <strong>Unverified Claim:</strong> Statement about "industry-leading performance" lacks supporting data.
-                            </div>
-                        </div>
-                        
-                        <div class="suggestions">
-                            <h3>Suggestions for Improvement</h3>
-                            <div class="suggestion">
-                                Replace "amazing" with "reliable" to align with brand voice guidelines.
-                            </div>
-                            <div class="suggestion">
-                                Add specific metrics to support performance claims.
-                            </div>
-                            <div class="suggestion">
-                                Include disclaimer for forward-looking statements.
-                            </div>
-                        </div>
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>AI Assistant</h2>
+                    <div class="current-model">Using: ChatGPT</div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai-message">
+                        Hello! I'm your AI assistant with built-in fact-checking capabilities. I can help answer questions while automatically verifying information and providing corrections when needed. How can I assist you today?
+                        <div class="fact-check-badge">Fact Checked ✓</div>
                     </div>
                 </div>
                 
-                <!-- Fact Checker Tab -->
-                <div id="fact-checker" class="tab-content">
-                    <h1>Fact Checker</h1>
-                    <p>Verify specific claims and statements against trusted sources.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="fact-input" placeholder="Enter specific claims to verify..."></textarea>
-                        <button class="btn">Check Facts</button>
-                    </div>
-                    
-                    <div class="results">
-                        <h2>Fact-Checking Results</h2>
-                        <div class="validation-card">
-                            <h3>Claim: "Our product reduces energy costs by 40%"</h3>
-                            <p><span class="status-pass">✓</span> <strong>Verified:</strong> Supported by independent study (Energy Efficiency Journal, 2023)</p>
-                        </div>
-                        
-                        <div class="validation-card">
-                            <h3>Claim: "Used by 90% of Fortune 500 companies"</h3>
-                            <p><span class="status-fail">✗</span> <strong>Unverified:</strong> Could not find independent verification. Current data suggests 65%.</p>
-                        </div>
-                    </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    AI is thinking<span class="typing-dots"></span>
                 </div>
                 
-                <!-- Brand Compliance Tab -->
-                <div id="brand-compliance" class="tab-content">
-                    <h1>Brand Compliance Check</h1>
-                    <p>Ensure content aligns with your brand guidelines and terminology.</p>
-                    
-                    <div class="input-section">
-                        <textarea id="brand-input" placeholder="Paste content to check against brand guidelines..."></textarea>
-                        <button class="btn">Check Compliance</button>
-                    </div>
-                    
-                    <div class="brand-guidelines">
-                        <h2>Brand Guidelines Status</h2>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Tone: Professional yet Approachable</h3>
-                                <p>Avoid overly casual language and slang</p>
-                            </div>
-                            <span class="compliance-badge badge-noncompliant">2 Violations</span>
-                        </div>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Terminology: Use "Client" not "Customer"</h3>
-                                <p>Maintain consistent terminology across all content</p>
-                            </div>
-                            <span class="compliance-badge badge-compliant">Compliant</span>
-                        </div>
-                        
-                        <div class="guideline-item">
-                            <div>
-                                <h3>Claims: Support with Data</h3>
-                                <p>All performance claims must be verifiable</p>
-                            </div>
-                            <span class="compliance-badge badge-noncompliant">1 Violation</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- History Tab -->
-                <div id="history" class="tab-content">
-                    <h1>Validation History</h1>
-                    <p>Review previously validated content and results.</p>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Q4 Product Launch Announcement</h3>
-                            <div class="history-score score-high">91%</div>
-                        </div>
-                        <div class="history-preview">Our latest innovation represents a significant leap forward in...</div>
-                        <div>Validated: Oct 15, 2023 | Content Type: Marketing</div>
-                    </div>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Technical Documentation Update</h3>
-                            <div class="history-score score-medium">76%</div>
-                        </div>
-                        <div class="history-preview">The API endpoints have been updated to include new authentication...</div>
-                        <div>Validated: Oct 12, 2023 | Content Type: Technical</div>
-                    </div>
-                    
-                    <div class="history-item">
-                        <div class="history-header">
-                            <h3>Investor Relations Report</h3>
-                            <div class="history-score score-high">88%</div>
-                        </div>
-                        <div class="history-preview">Q3 financial results demonstrate strong growth in key markets...</div>
-                        <div>Validated: Oct 5, 2023 | Content Type: Financial</div>
-                    </div>
+                <div class="chat-input-container">
+                    <form class="chat-input-form" id="chatForm">
+                        <textarea class="chat-input" id="chatInput" placeholder="Ask me anything... (I'll fact-check my responses)" rows="1"></textarea>
+                        <button type="submit" class="send-button" id="sendButton">
+                            ➤
+                        </button>
+                    </form>
                 </div>
             </div>
+        </div>
+        
+        <div class="fact-check-panel" id="factCheckPanel">
+            <h3>Fact-Checking Results</h3>
+            <p>Ask a question to see real-time fact verification...</p>
         </div>
     </div>
 
     <script>
-        // Tab functionality
-        document.querySelectorAll('.sidebar li').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all tabs
-                document.querySelectorAll('.sidebar li').forEach(li => {
-                    li.classList.remove('active');
-                });
-                
-                // Hide all tab content
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Show corresponding tab content
-                const tabId = this.getAttribute('data-tab');
-                document.getElementById(tabId).classList.add('active');
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatForm = document.getElementById('chatForm');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const factCheckPanel = document.getElementById('factCheckPanel');
+        const modelOptions = document.querySelectorAll('.model-option');
+        
+        let currentModel = 'chatgpt';
+        
+        // Model selection
+        modelOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                modelOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                currentModel = option.dataset.model;
+                document.querySelector('.current-model').textContent = `Using: ${getModelName(currentModel)}`;
             });
         });
         
-        // Validation functionality
-        document.getElementById('validate-btn').addEventListener('click', function() {
-            const content = document.getElementById('content-input').value;
+        function getModelName(model) {
+            const models = {
+                'chatgpt': 'ChatGPT',
+                'gemini': 'Gemini Pro',
+                'deepseek': 'DeepSeek',
+                'claude': 'Claude 2'
+            };
+            return models[model] || 'AI Assistant';
+        }
+        
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Chat form submission
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = chatInput.value.trim();
             
-            if (content.trim() === '') {
-                alert('Please enter some content to validate.');
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            
+            // Show typing indicator
+            showTyping();
+            
+            // Simulate AI response (in real app, this would be API calls)
+            setTimeout(() => {
+                hideTyping();
+                const aiResponse = generateAIResponse(message, currentModel);
+                addMessage(aiResponse.response, 'ai', aiResponse.factCheck);
+                updateFactCheckPanel(aiResponse.factCheck);
+            }, 2000);
+        });
+        
+        function addMessage(content, sender, factCheck = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            let messageContent = content;
+            
+            if (sender === 'ai' && factCheck) {
+                if (factCheck.needsCorrection) {
+                    messageContent += `<div class="correction">${factCheck.correction}</div>`;
+                }
+                messageContent += `<div class="fact-check-badge">${factCheck.verified ? 'Fact Checked ✓' : 'Verification Failed'}</div>`;
+            }
+            
+            messageDiv.innerHTML = messageContent;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            sendButton.disabled = true;
+        }
+        
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+            sendButton.disabled = false;
+        }
+        
+        function updateFactCheckPanel(factCheck) {
+            if (!factCheck) {
+                factCheckPanel.innerHTML = '<h3>Fact-Checking Results</h3><p>Ask a question to see real-time fact verification...</p>';
                 return;
             }
             
-            // In a real application, this would make API calls to various validation services
-            // For this demo, we'll just show the results
+            let confidenceClass = 'high';
+            let confidenceWidth = '90%';
+            if (factCheck.confidence < 70) {
+                confidenceClass = 'medium';
+                confidenceWidth = '60%';
+            }
+            if (factCheck.confidence < 40) {
+                confidenceClass = 'low';
+                confidenceWidth = '30%';
+            }
             
-            // Simulate API call delay
-            this.textContent = 'Validating...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                document.getElementById('validation-results').style.display = 'block';
-                this.textContent = 'Validate Content';
-                this.disabled = false;
-                
-                // Scroll to results
-                document.getElementById('validation-results').scrollIntoView({ 
-                    behavior: 'smooth' 
-                });
-            }, 1500);
-        });
+            factCheckPanel.innerHTML = `
+                <h3>Fact-Checking Results</h3>
+                <div class="verification-result ${!factCheck.verified ? 'false' : ''}">
+                    <strong>Status:</strong> ${factCheck.verified ? 'Verified ✓' : 'Needs Correction'}
+                    <div class="confidence-meter">
+                        <div class="confidence-level ${confidenceClass}" style="width: ${confidenceWidth}"></div>
+                    </div>
+                    <div><strong>Confidence:</strong> ${factCheck.confidence}%</div>
+                    ${factCheck.sources ? `<div><strong>Sources:</strong> ${factCheck.sources.join(', ')}</div>` : ''}
+                    ${factCheck.notes ? `<div><strong>Notes:</strong> ${factCheck.notes}</div>` : ''}
+                </div>
+            `;
+        }
         
-        // Simulate real-time validation as user types
-        document.getElementById('content-input').addEventListener('input', function() {
-            // In a real app, this could trigger lightweight validation
-            // or provide real-time feedback
+        // Simulated AI responses with fact-checking
+        function generateAIResponse(message, model) {
+            const responses = {
+                'history': {
+                    response: "The pyramids of Giza were built around 2580–2560 BC during the Fourth Dynasty of Egypt's Old Kingdom. They were constructed as tombs for the pharaohs.",
+                    factCheck: {
+                        verified: true,
+                        confidence: 95,
+                        sources: ['Encyclopedia Britannica', 'National Geographic'],
+                        needsCorrection: false,
+                        notes: 'Dates align with archaeological evidence'
+                    }
+                },
+                'science': {
+                    response: "The Great Wall of China is visible from space with the naked eye. This is a common misconception.",
+                    factCheck: {
+                        verified: false,
+                        confidence: 85,
+                        sources: ['NASA', 'Chinese National Space Administration'],
+                        needsCorrection: true,
+                        correction: 'The Great Wall of China is generally not visible to the naked eye from space without magnification. This was confirmed by astronauts and various space agencies.',
+                        notes: 'Corrected common misconception'
+                    }
+                },
+                'technology': {
+                    response: "Quantum computing uses qubits which can exist in multiple states simultaneously, unlike classical bits that are only 0 or 1.",
+                    factCheck: {
+                        verified: true,
+                        confidence: 92,
+                        sources: ['Nature Journal', 'MIT Research'],
+                        needsCorrection: false,
+                        notes: 'Accurate description of quantum superposition'
+                    }
+                },
+                'default': {
+                    response: `Based on my analysis using ${getModelName(model)}, ${message} is a topic that requires careful consideration. I've cross-referenced this information with multiple reliable sources to ensure accuracy.`,
+                    factCheck: {
+                        verified: true,
+                        confidence: 78,
+                        sources: ['General knowledge base', 'Cross-referenced databases'],
+                        needsCorrection: false,
+                        notes: 'General response verified through standard fact-checking protocols'
+                    }
+                }
+            };
+            
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('pyramid') || lowerMessage.includes('egypt')) {
+                return responses.history;
+            } else if (lowerMessage.includes('great wall') || lowerMessage.includes('space')) {
+                return responses.science;
+            } else if (lowerMessage.includes('quantum') || lowerMessage.includes('comput')) {
+                return responses.technology;
+            } else {
+                return responses.default;
+            }
+        }
+        
+        // Initialize with sample fact-check
+        updateFactCheckPanel({
+            verified: true,
+            confidence: 95,
+            sources: ['Initial system verification'],
+            needsCorrection: false,
+            notes: 'System ready for fact-checking queries'
         });
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Fact Checker - Real AI Assistant</title>
+    <title>AI Guardrail - Output Governance & Validation</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -13,7 +13,6 @@
             --success: #059669;
             --gray: #6b7280;
             --light: #f8fafc;
-            --dark: #1f2937;
         }
         
         * {
@@ -24,8 +23,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background-color: #f1f5f9;
             color: #334155;
         }
         
@@ -33,432 +31,537 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         
         header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
+        }
+        
+        .nav-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .chat-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            height: 80vh;
+        .sidebar li:hover {
+            color: var(--primary);
         }
         
-        .chat-header {
+        .sidebar li.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        h1 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .input-section {
+            margin-bottom: 2rem;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+        }
+        
+        .results {
+            margin-top: 2rem;
+        }
+        
+        .score-card {
+            background: var(--light);
+            border-radius: 8px;
             padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .chat-header h2 {
-            color: var(--primary);
+        .score {
+            font-size: 2rem;
+            font-weight: 700;
         }
         
-        .current-model {
-            background: var(--light);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: var(--gray);
+        .score-high {
+            color: var(--success);
         }
         
-        .chat-messages {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 1rem 1.5rem;
-            border-radius: 18px;
-            line-height: 1.5;
-        }
-        
-        .user-message {
-            align-self: flex-end;
-            background: var(--primary);
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .ai-message {
-            align-self: flex-start;
-            background: var(--light);
-            border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 5px;
-        }
-        
-        .fact-check-badge {
-            display: inline-block;
-            background: var(--success);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .correction {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-        }
-        
-        .correction:before {
-            content: "⚠️ Correction: ";
-            font-weight: bold;
+        .score-medium {
             color: var(--warning);
         }
         
-        .chat-input-container {
-            padding: 1.5rem;
-            border-top: 1px solid #e2e8f0;
+        .score-low {
+            color: var(--danger);
         }
         
-        .chat-input-form {
-            display: flex;
+        .validation-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1rem;
         }
         
-        .chat-input {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 25px;
-            font-size: 1rem;
-            resize: none;
-            height: 60px;
-            transition: border-color 0.3s;
+        .validation-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
         }
         
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .send-button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
+        .validation-card h3 {
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-            align-self: flex-end;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
         
-        .typing-indicator {
-            display: none;
-            padding: 1rem 1.5rem;
+        .status-pass {
+            color: var(--success);
+        }
+        
+        .status-fail {
+            color: var(--danger);
+        }
+        
+        .status-warning {
+            color: var(--warning);
+        }
+        
+        .issues-list {
+            margin-top: 1.5rem;
+        }
+        
+        .issue {
+            padding: 0.75rem;
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .suggestions {
+            margin-top: 1.5rem;
+        }
+        
+        .suggestion {
+            padding: 0.75rem;
+            background: #f0fdf4;
+            border-left: 4px solid var(--success);
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .history-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
             background: var(--light);
-            border-radius: 18px;
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-            color: var(--gray);
-            font-style: italic;
         }
         
-        .typing-dots {
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-score {
+            font-weight: 600;
+        }
+        
+        .history-preview {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .brand-guidelines {
+            margin-top: 2rem;
+        }
+        
+        .guideline-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .compliance-badge {
             display: inline-block;
-        }
-        
-        .typing-dots:after {
-            content: '...';
-            animation: typing 1.5s infinite;
-        }
-        
-        @keyframes typing {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-
-        .sources {
-            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
             font-size: 0.8rem;
-            color: var(--gray);
+            font-weight: 600;
         }
-
-        .sources strong {
-            color: var(--dark);
+        
+        .badge-compliant {
+            background: #dcfce7;
+            color: var(--success);
+        }
+        
+        .badge-noncompliant {
+            background: #fecaca;
+            color: var(--danger);
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="container nav-container">
+            <div class="logo">AI Guardrail</div>
+            <div class="nav-links">
+                <a href="#">Dashboard</a>
+                <a href="#">Reports</a>
+                <a href="#">Brand Guidelines</a>
+                <a href="#">Settings</a>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
-        <header>
-            <div class="logo">
-                <span>🤖</span>
-                AI Fact Checker Pro
-            </div>
-            <div class="current-model">Using: Smart AI</div>
-        </header>
-        
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2>AI Assistant with Real-time Fact Checking</h2>
+        <div class="dashboard">
+            <div class="sidebar">
+                <h3>Validation Tools</h3>
+                <ul>
+                    <li class="active" data-tab="content-validator">Content Validator</li>
+                    <li data-tab="fact-checker">Fact Checker</li>
+                    <li data-tab="brand-compliance">Brand Compliance</li>
+                    <li data-tab="plagiarism-check">Plagiarism Detection</li>
+                    <li data-tab="history">Validation History</li>
+                </ul>
+                
+                <h3 style="margin-top: 2rem;">Brand Guidelines</h3>
+                <ul>
+                    <li>Tone & Voice</li>
+                    <li>Terminology</li>
+                    <li>Style Rules</li>
+                    <li>Compliance Rules</li>
+                </ul>
             </div>
             
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai-message">
-                    <strong>Hello! I'm your AI assistant with built-in fact-checking. 🔍</strong><br><br>
-                    I can help with:
-                    • Answering questions with verified information<br>
-                    • Checking facts and providing sources<br>
-                    • Correcting misinformation<br>
-                    • Explaining complex topics<br><br>
-                    Try asking me about science, history, current events, or anything else!
-                    <div class="fact-check-badge">System Ready ✓</div>
+            <div class="main-content">
+                <!-- Content Validator Tab -->
+                <div id="content-validator" class="tab-content active">
+                    <h1>AI Content Validator</h1>
+                    <p>Paste your AI-generated content below to validate for accuracy, brand compliance, and potential issues.</p>
+                    
+                    <div class="input-section">
+                        <textarea id="content-input" placeholder="Paste your AI-generated content here..."></textarea>
+                        <button id="validate-btn" class="btn">Validate Content</button>
+                    </div>
+                    
+                    <div id="validation-results" class="results" style="display: none;">
+                        <div class="score-card">
+                            <div>
+                                <h2>Overall Trust Score</h2>
+                                <p>Based on comprehensive analysis of your content</p>
+                            </div>
+                            <div id="trust-score" class="score score-high">87%</div>
+                        </div>
+                        
+                        <h2>Validation Results</h2>
+                        <div class="validation-results">
+                            <div class="validation-card">
+                                <h3><span class="status-pass">✓</span> Factual Accuracy</h3>
+                                <p>Checked against verified sources and databases</p>
+                                <div class="score score-high">92%</div>
+                            </div>
+                            
+                            <div class="validation-card">
+                                <h3><span class="status-warning">⚠</span> Brand Compliance</h3>
+                                <p>Alignment with company tone and terminology</p>
+                                <div class="score score-medium">78%</div>
+                            </div>
+                            
+                            <div class="validation-card">
+                                <h3><span class="status-pass">✓</span> Plagiarism Check</h3>
+                                <p>Similarity with existing published content</p>
+                                <div class="score score-high">96%</div>
+                            </div>
+                            
+                            <div class="validation-card">
+                                <h3><span class="status-pass">✓</span> Hallucination Detection</h3>
+                                <p>Identification of potentially fabricated information</p>
+                                <div class="score score-high">89%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="issues-list">
+                            <h3>Identified Issues</h3>
+                            <div class="issue">
+                                <strong>Brand Voice Inconsistency:</strong> Content uses casual tone where formal is required per guidelines.
+                            </div>
+                            <div class="issue">
+                                <strong>Unverified Claim:</strong> Statement about "industry-leading performance" lacks supporting data.
+                            </div>
+                        </div>
+                        
+                        <div class="suggestions">
+                            <h3>Suggestions for Improvement</h3>
+                            <div class="suggestion">
+                                Replace "amazing" with "reliable" to align with brand voice guidelines.
+                            </div>
+                            <div class="suggestion">
+                                Add specific metrics to support performance claims.
+                            </div>
+                            <div class="suggestion">
+                                Include disclaimer for forward-looking statements.
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="typing-indicator" id="typingIndicator">
-                AI is thinking<span class="typing-dots"></span>
-            </div>
-            
-            <div class="chat-input-container">
-                <form class="chat-input-form" id="chatForm">
-                    <textarea class="chat-input" id="chatInput" placeholder="Ask me anything... (I'll provide verified answers with sources)" rows="1"></textarea>
-                    <button type="submit" class="send-button" id="sendButton">
-                        ➤
-                    </button>
-                </form>
+                
+                <!-- Fact Checker Tab -->
+                <div id="fact-checker" class="tab-content">
+                    <h1>Fact Checker</h1>
+                    <p>Verify specific claims and statements against trusted sources.</p>
+                    
+                    <div class="input-section">
+                        <textarea id="fact-input" placeholder="Enter specific claims to verify..."></textarea>
+                        <button class="btn">Check Facts</button>
+                    </div>
+                    
+                    <div class="results">
+                        <h2>Fact-Checking Results</h2>
+                        <div class="validation-card">
+                            <h3>Claim: "Our product reduces energy costs by 40%"</h3>
+                            <p><span class="status-pass">✓</span> <strong>Verified:</strong> Supported by independent study (Energy Efficiency Journal, 2023)</p>
+                        </div>
+                        
+                        <div class="validation-card">
+                            <h3>Claim: "Used by 90% of Fortune 500 companies"</h3>
+                            <p><span class="status-fail">✗</span> <strong>Unverified:</strong> Could not find independent verification. Current data suggests 65%.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Brand Compliance Tab -->
+                <div id="brand-compliance" class="tab-content">
+                    <h1>Brand Compliance Check</h1>
+                    <p>Ensure content aligns with your brand guidelines and terminology.</p>
+                    
+                    <div class="input-section">
+                        <textarea id="brand-input" placeholder="Paste content to check against brand guidelines..."></textarea>
+                        <button class="btn">Check Compliance</button>
+                    </div>
+                    
+                    <div class="brand-guidelines">
+                        <h2>Brand Guidelines Status</h2>
+                        
+                        <div class="guideline-item">
+                            <div>
+                                <h3>Tone: Professional yet Approachable</h3>
+                                <p>Avoid overly casual language and slang</p>
+                            </div>
+                            <span class="compliance-badge badge-noncompliant">2 Violations</span>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div>
+                                <h3>Terminology: Use "Client" not "Customer"</h3>
+                                <p>Maintain consistent terminology across all content</p>
+                            </div>
+                            <span class="compliance-badge badge-compliant">Compliant</span>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div>
+                                <h3>Claims: Support with Data</h3>
+                                <p>All performance claims must be verifiable</p>
+                            </div>
+                            <span class="compliance-badge badge-noncompliant">1 Violation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History Tab -->
+                <div id="history" class="tab-content">
+                    <h1>Validation History</h1>
+                    <p>Review previously validated content and results.</p>
+                    
+                    <div class="history-item">
+                        <div class="history-header">
+                            <h3>Q4 Product Launch Announcement</h3>
+                            <div class="history-score score-high">91%</div>
+                        </div>
+                        <div class="history-preview">Our latest innovation represents a significant leap forward in...</div>
+                        <div>Validated: Oct 15, 2023 | Content Type: Marketing</div>
+                    </div>
+                    
+                    <div class="history-item">
+                        <div class="history-header">
+                            <h3>Technical Documentation Update</h3>
+                            <div class="history-score score-medium">76%</div>
+                        </div>
+                        <div class="history-preview">The API endpoints have been updated to include new authentication...</div>
+                        <div>Validated: Oct 12, 2023 | Content Type: Technical</div>
+                    </div>
+                    
+                    <div class="history-item">
+                        <div class="history-header">
+                            <h3>Investor Relations Report</h3>
+                            <div class="history-score score-high">88%</div>
+                        </div>
+                        <div class="history-preview">Q3 financial results demonstrate strong growth in key markets...</div>
+                        <div>Validated: Oct 5, 2023 | Content Type: Financial</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Knowledge Database with Real Facts
-        const knowledgeBase = {
-            // Science & Technology
-            'quantum computer': {
-                response: "Quantum computers use quantum bits (qubits) that can exist in multiple states simultaneously through superposition. Unlike classical bits (0 or 1), qubits can be 0, 1, or both at the same time, enabling massive parallel computation.",
-                sources: ["Nature Physics", "IBM Research", "MIT Technology Review"],
-                confidence: 95
-            },
-            'ai artificial intelligence': {
-                response: "Artificial Intelligence refers to computer systems that can perform tasks typically requiring human intelligence, such as visual perception, speech recognition, and decision-making. Modern AI uses machine learning and neural networks.",
-                sources: ["Stanford AI Index", "MIT AI Research", "Google AI"],
-                confidence: 92
-            },
-            
-            // History
-            'world war 2 start': {
-                response: "World War II began on September 1, 1939, when Germany invaded Poland. Britain and France declared war on Germany two days later on September 3, 1939.",
-                sources: ["British National Archives", "US Holocaust Museum", "Encyclopedia Britannica"],
-                confidence: 98
-            },
-            'moon landing': {
-                response: "The first moon landing was Apollo 11 on July 20, 1969. Neil Armstrong and Buzz Aldrin landed on the moon while Michael Collins orbited above. Armstrong's famous words: 'That's one small step for man, one giant leap for mankind.'",
-                sources: ["NASA Archives", "Smithsonian Institution", "Apollo 11 Mission Reports"],
-                confidence: 99
-            },
-            
-            // Geography
-            'largest country': {
-                response: "Russia is the largest country by land area at 17.1 million square kilometers. It spans 11 time zones across Europe and Asia.",
-                sources: ["World Bank Data", "United Nations", "CIA World Factbook"],
-                confidence: 97
-            },
-            'longest river': {
-                response: "The Nile River is generally considered the longest river in the world at approximately 6,650 km (4,130 miles), flowing through 11 African countries. Some studies suggest the Amazon might be longer, but the Nile remains officially recognized as the longest.",
-                sources: ["National Geographic", "US Geological Survey", "Encyclopedia Britannica"],
-                confidence: 90
-            },
-            
-            // Common Misconceptions (with corrections)
-            'great wall visible space': {
-                response: "The Great Wall of China is NOT generally visible to the naked eye from space. This is a common myth. While it's an impressive structure, its width is too narrow and colors blend with surroundings, making it difficult to see without magnification from low Earth orbit.",
-                sources: ["NASA", "Chinese Space Agency", "Scientific American"],
-                confidence: 96,
-                correction: "Contrary to popular belief, the Great Wall is not clearly visible from space with the naked eye"
-            },
-            'blood blue': {
-                response: "Human blood is NEVER blue. Blood is always red due to hemoglobin. Veins appear blue through skin due to light absorption and scattering, but blood itself is various shades of red (bright red when oxygenated, dark red when deoxygenated).",
-                sources: ["American Chemical Society", "Harvard Medical School", "Scientific Reports"],
-                confidence: 99,
-                correction: "Blood is always red, not blue as sometimes mistakenly believed"
-            }
-        };
-
-        // DOM Elements
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatForm = document.getElementById('chatForm');
-        const sendButton = document.getElementById('sendButton');
-        const typingIndicator = document.getElementById('typingIndicator');
-
-        // Auto-resize textarea
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+        // Tab functionality
+        document.querySelectorAll('.sidebar li').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.sidebar li').forEach(li => {
+                    li.classList.remove('active');
+                });
+                
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding tab content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
         });
-
-        // Chat form submission
-        chatForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const message = chatInput.value.trim();
+        
+        // Validation functionality
+        document.getElementById('validate-btn').addEventListener('click', function() {
+            const content = document.getElementById('content-input').value;
             
-            if (!message) return;
+            if (content.trim() === '') {
+                alert('Please enter some content to validate.');
+                return;
+            }
             
-            // Add user message
-            addMessage(message, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
+            // In a real application, this would make API calls to various validation services
+            // For this demo, we'll just show the results
             
-            // Show typing indicator
-            showTyping();
+            // Simulate API call delay
+            this.textContent = 'Validating...';
+            this.disabled = true;
             
-            // Generate AI response
             setTimeout(() => {
-                hideTyping();
-                const response = generateSmartResponse(message);
-                addMessage(response.text, 'ai', response.factCheck);
-            }, 1500 + Math.random() * 1000); // Realistic typing delay
+                document.getElementById('validation-results').style.display = 'block';
+                this.textContent = 'Validate Content';
+                this.disabled = false;
+                
+                // Scroll to results
+                document.getElementById('validation-results').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }, 1500);
         });
-
-        function addMessage(content, sender, factCheck = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            let messageContent = content;
-            
-            if (sender === 'ai' && factCheck) {
-                // Add sources
-                if (factCheck.sources && factCheck.sources.length > 0) {
-                    messageContent += `<div class="sources"><strong>Sources:</strong> ${factCheck.sources.join(', ')}</div>`;
-                }
-                
-                // Add correction if needed
-                if (factCheck.correction) {
-                    messageContent += `<div class="correction">${factCheck.correction}</div>`;
-                }
-                
-                // Add fact check badge
-                const badgeText = factCheck.confidence > 80 ? 'Verified ✓' : 
-                                factCheck.confidence > 60 ? 'Likely Accurate' : 'Needs Verification';
-                const badgeColor = factCheck.confidence > 80 ? 'var(--success)' : 
-                                 factCheck.confidence > 60 ? 'var(--warning)' : 'var(--danger)';
-                
-                messageContent += `<div class="fact-check-badge" style="background: ${badgeColor}">${badgeText} (${factCheck.confidence}%)</div>`;
-            }
-            
-            messageDiv.innerHTML = messageContent;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function showTyping() {
-            typingIndicator.style.display = 'block';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            sendButton.disabled = true;
-        }
-
-        function hideTyping() {
-            typingIndicator.style.display = 'none';
-            sendButton.disabled = false;
-        }
-
-        function generateSmartResponse(userMessage) {
-            const lowerMessage = userMessage.toLowerCase();
-            
-            // Check for exact matches in knowledge base
-            for (const [key, data] of Object.entries(knowledgeBase)) {
-                if (lowerMessage.includes(key)) {
-                    return {
-                        text: data.response,
-                        factCheck: {
-                            confidence: data.confidence,
-                            sources: data.sources,
-                            correction: data.correction || null
-                        }
-                    };
-                }
-            }
-
-            // Smart response based on message content
-            if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-                return {
-                    text: "Hello! I'm your AI assistant with real-time fact checking. I can help answer questions about science, history, technology, and more. What would you like to know?",
-                    factCheck: { confidence: 100, sources: ["System"], correction: null }
-                };
-            }
-
-            if (lowerMessage.includes('thank')) {
-                return {
-                    text: "You're welcome! I'm happy to help. Feel free to ask me anything else you'd like to know.",
-                    factCheck: { confidence: 100, sources: ["System"], correction: null }
-                };
-            }
-
-            if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you')) {
-                return {
-                    text: "I'm an AI assistant with built-in fact-checking capabilities. I provide verified information from reliable sources and correct common misconceptions. I can help with research, answer questions, and ensure information accuracy.",
-                    factCheck: { confidence: 100, sources: ["System"], correction: null }
-                };
-            }
-
-            // Default response for unknown queries
-            const defaultResponses = [
-                "I'd be happy to help with that! Based on current knowledge, ",
-                "That's an interesting question. From verified sources, ",
-                "I've checked multiple reliable references about this. ",
-                "According to fact-checked information, "
-            ];
-
-            const randomResponse = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-            
-            return {
-                text: randomResponse + "this appears to be accurate based on available data, but I recommend consulting specialized sources for comprehensive verification.",
-                factCheck: { confidence: 75, sources: ["General Knowledge Base"], correction: null }
-            };
-        }
-
-        // Allow Enter key to send (but Shift+Enter for new line)
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                chatForm.dispatchEvent(new Event('submit'));
-            }
+        
+        // Simulate real-time validation as user types
+        document.getElementById('content-input').addEventListener('input', function() {
+            // In a real app, this could trigger lightweight validation
+            // or provide real-time feedback
         });
     </script>
 </body>
